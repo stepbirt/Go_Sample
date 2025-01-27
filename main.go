@@ -18,6 +18,8 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/stepbirt/api/auth"
+	"github.com/stepbirt/api/router"
+	"github.com/stepbirt/api/store"
 	"github.com/stepbirt/api/todo"
 )
 
@@ -76,9 +78,9 @@ func main() {
 	//middleware
 	protectd := r.Group("", auth.Protect([]byte(os.Getenv("SIGNKEY"))))
 
-	gormStore := todo.NewGormStore(db)
+	gormStore := store.NewGormStore(db)
 	handler := todo.NewTodoHandler(gormStore)
-	protectd.POST("/todos", todo.NewGinHandler(handler.NewTask))
+	protectd.POST("/todos", router.NewGinHandler(handler.NewTask))
 	// protectd.GET("/todos", handler.List)
 	// protectd.DELETE("/todos/:id", handler.Remove)
 
