@@ -26,13 +26,21 @@ type storer interface {
 	New(*Todo) error
 }
 
+type Context interface {
+	Bind(interface{}) error
+	TransactionId() string
+	Username() string
+	JSON(int, interface{})
+}
+
 func NewTodoHandler(store storer) *TodoHandler {
 	return &TodoHandler{store: store}
 }
 
-func (t *TodoHandler) NewTask(c *gin.Context) {
+func (t *TodoHandler) NewTask(c Context) {
 	var todo Todo
-	if err := c.ShouldBindJSON(&todo); err != nil {
+	// if err := c.ShouldBindJSON(&todo); err != nil {
+	if err := c.Bind(&todo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -40,8 +48,11 @@ func (t *TodoHandler) NewTask(c *gin.Context) {
 	}
 
 	if todo.Title == "sleep" {
-		username, _ := c.Get("username")
-		log.Println(username, "not allow")
+		// transactionID := c.Request.Header.Get("TransactionID")
+		transactionID := c.TransactionId()
+		// username, _ := c.Get("username")
+		username := c.Username()
+		log.Println(transactionID, username, "not allow")
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "not allow",
 		})

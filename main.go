@@ -78,8 +78,8 @@ func main() {
 
 	gormStore := todo.NewGormStore(db)
 	handler := todo.NewTodoHandler(gormStore)
+	protectd.POST("/todos", todo.NewGinHandler(handler.NewTask))
 	// protectd.GET("/todos", handler.List)
-	protectd.POST("/todos", handler.NewTask)
 	// protectd.DELETE("/todos/:id", handler.Remove)
 
 	// r.Run()
