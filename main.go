@@ -10,9 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"golang.org/x/time/rate"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -46,19 +47,14 @@ func main() {
 	}
 	db.AutoMigrate(&todo.Todo{})
 
-	r := gin.Default() // have middleware, logging etc
-	config := cors.DefaultConfig()
-
-	config.AllowOrigins = []string{
-		"http://localhost:3000", // client
+	client, err := mongo.Connect(options.Client().ApplyURI("mongodb://mongoadmin:secret@localhost:27017"))
+	if err != nil {
+		panic("fail to connect db")
 	}
 
-	config.AllowHeaders = []string{
-		"Origin",
-		"Authorization",
-		"TransactionID",
-	}
-	r.Use(cors.New(config))
+	collection := client.Database("myapp").Collection("todos")
+
+	r := router.NewMyRouter()
 
 	r.GET("/healthz", func(ctx *gin.Context) {
 		ctx.Status(http.StatusOK)
@@ -76,11 +72,15 @@ func main() {
 	r.GET("/tokenz", auth.AccessToken(os.Getenv("SIGNKEY")))
 
 	//middleware
-	protectd := r.Group("", auth.Protect([]byte(os.Getenv("SIGNKEY"))))
+	// protectd := r.Group("", auth.Protect([]byte(os.Getenv("SIGNKEY"))))
 
-	gormStore := store.NewGormStore(db)
-	handler := todo.NewTodoHandler(gormStore)
-	protectd.POST("/todos", router.NewGinHandler(handler.NewTask))
+	// when we use Mysql
+	// gormStore := store.NewGormStore(db)
+	// handler := todo.NewTodoHandler(gormStore)
+	// when we use Mongo
+	mongoStore := store.NewMongoDBStore(collection)
+	handler := todo.NewTodoHandler(mongoStore)
+	r.POST("/todos", handler.NewTask)
 	// protectd.GET("/todos", handler.List)
 	// protectd.DELETE("/todos/:id", handler.Remove)
 

@@ -15,3 +15,8 @@ image:
 container:
 	docker run -p:8081:8081 --env-file ./local.env --link some-mariadb:db \
 	--name myapp todo:test
+mongodb:
+	docker run -p 127.0.0.1:27017:27017 --name mongodb \
+	-e MONGO_INITDB_ROOT_USERNAME=mongoadmin \
+	-e MONGO_INITDB_ROOT_PASSWORD=secret -d \
+	mongo
