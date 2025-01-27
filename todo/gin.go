@@ -13,7 +13,7 @@ func NewMyContext(c *gin.Context) *MyContext {
 func (c *MyContext) Bind(v interface{}) error {
 	return c.Context.ShouldBindJSON(v)
 }
-func (c *MyContext) TransactionId() string {
+func (c *MyContext) TransactionID() string {
 	return c.Request.Header.Get("TransactionID")
 }
 func (c *MyContext) Username() string {
