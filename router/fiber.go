@@ -27,12 +27,12 @@ func (f *FiberRouter) POST(path string, handler func(todo.Context)) {
 	})
 }
 
-func (f *FiberRouter) GET(path string, handler func(todo.Context)) {
-	f.App.Get(path, func(c *fiber.Ctx) error {
-		handler(NewFiberContext(c))
-		return nil
-	})
-}
+// func (f *FiberRouter) GET(path string, handler func(todo.Context)) {
+// 	f.App.Get(path, func(c *fiber.Ctx) error {
+// 		handler(NewFiberContext(c))
+// 		return nil
+// 	})
+// }
 
 type FiberContext struct {
 	*fiber.Ctx // composition

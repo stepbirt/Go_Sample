@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
@@ -56,20 +57,14 @@ func main() {
 
 	// r.GET("/limitz", litmitHandler)
 
-	// r.GET("/x", func(ctx *gin.Context) {
-	// 	ctx.JSON(http.StatusOK, gin.H{
-	// 		"buildcommit": buildcommit,
-	// 		"buildtime":   buildtime,
-	// 	})
-	// })
-
 	// r.GET("/tokenz", auth.AccessToken(os.Getenv("SIGNKEY")))
 
 	//fibier
 	r := router.NewFiberRouter()
-	// r.GET("/healthz", func(ctx *fiber.Ctx) {
-	// 	ctx.Status(200)
-	// })
+	r.Get("/x", func(ctx *fiber.Ctx) error {
+		ctx.Status(http.StatusOK)
+		return ctx.SendString("hoho")
+	})
 	//middleware
 	// protectd := r.Group("", auth.Protect([]byte(os.Getenv("SIGNKEY"))))
 
