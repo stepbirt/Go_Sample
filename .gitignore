@@ -1,3 +1,4 @@
 local.env
 test.db
 app
+.DS_Store
