@@ -76,11 +76,11 @@ func main() {
 	//middleware
 	protectd := r.Group("", auth.Protect([]byte(os.Getenv("SIGNKEY"))))
 
-	handler := todo.NewTodoHandler(db)
-	// r.POST("/todos", handler.NewTask)
-	protectd.GET("/todos", handler.List)
+	gormStore := todo.NewGormStore(db)
+	handler := todo.NewTodoHandler(gormStore)
+	// protectd.GET("/todos", handler.List)
 	protectd.POST("/todos", handler.NewTask)
-	protectd.DELETE("/todos/:id", handler.Remove)
+	// protectd.DELETE("/todos/:id", handler.Remove)
 
 	// r.Run()
 	//graceful shutdown

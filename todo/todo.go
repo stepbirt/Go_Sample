@@ -3,7 +3,6 @@ package todo
 import (
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -20,23 +19,18 @@ func (Todo) TableName() string {
 }
 
 type TodoHandler struct {
-	db *gorm.DB
+	store storer
 }
 
-func NewTodoHandler(db *gorm.DB) *TodoHandler {
-	return &TodoHandler{db: db}
+type storer interface {
+	New(*Todo) error
+}
+
+func NewTodoHandler(store storer) *TodoHandler {
+	return &TodoHandler{store: store}
 }
 
 func (t *TodoHandler) NewTask(c *gin.Context) {
-	//Use middle ware not use this manual
-	// s := c.Request.Header.Get("Authorization")
-	// tokenString := strings.TrimPrefix(s, "Bearer ")
-
-	// if err := auth.Protect(tokenString); err != nil {
-	// 	c.AbortWithStatus(http.StatusUnauthorized)
-	// 	return
-	// }
-
 	var todo Todo
 	if err := c.ShouldBindJSON(&todo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -54,8 +48,8 @@ func (t *TodoHandler) NewTask(c *gin.Context) {
 		return
 	}
 
-	r := t.db.Create(&todo)
-	if err := r.Error; err != nil {
+	err := t.store.New(&todo)
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err.Error(),
 		})
@@ -66,38 +60,38 @@ func (t *TodoHandler) NewTask(c *gin.Context) {
 	})
 }
 
-func (t *TodoHandler) List(c *gin.Context) {
-	var todos []Todo
-	r := t.db.Find(&todos)
-	if err := r.Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
-	c.JSON(http.StatusOK, todos)
-}
+// func (t *TodoHandler) List(c *gin.Context) {
+// 	var todos []Todo
+// 	r := t.db.Find(&todos)
+// 	if err := r.Error; err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{
+// 			"error": err.Error(),
+// 		})
+// 		return
+// 	}
+// 	c.JSON(http.StatusOK, todos)
+// }
 
-func (t *TodoHandler) Remove(c *gin.Context) {
-	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
+// func (t *TodoHandler) Remove(c *gin.Context) {
+// 	idParam := c.Param("id")
+// 	id, err := strconv.Atoi(idParam)
+// 	if err != nil {
+// 		c.JSON(http.StatusBadRequest, gin.H{
+// 			"error": err.Error(),
+// 		})
+// 		return
+// 	}
 
-	r := t.db.Delete(&Todo{}, id)
+// 	r := t.db.Delete(&Todo{}, id)
 
-	if err := r.Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
-		return
-	}
+// 	if err := r.Error; err != nil {
+// 		c.JSON(http.StatusInternalServerError, gin.H{
+// 			"error": err.Error(),
+// 		})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status": "success",
-	})
-}
+// 	c.JSON(http.StatusOK, gin.H{
+// 		"status": "success",
+// 	})
+// }
